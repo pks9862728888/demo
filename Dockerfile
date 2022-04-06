@@ -11,6 +11,6 @@ RUN mkdir -p /usr/src/demo
 COPY . /usr/src/demo
 
 # Make .m2 repo to keep locally downloaded files
-RUN mkdir -p /usr/src/mymaven/.m2
+RUN mkdir -p /usr/src/mymaven/m2
 
 ENTRYPOINT ["/usr/local/scripts/mvn-commands.sh"]
