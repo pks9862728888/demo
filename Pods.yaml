@@ -11,7 +11,7 @@ spec:
       emptyDir: { }
   containers:
     - name: app-container
-      image: hub.docker.com/hackedlings/demo:1.0
+      image: hackedlings/demo:1.0
       imagePullPolicy: Always
       volumeMounts:
         - name: shared-logs
