@@ -25,6 +25,9 @@ spec:
           value: /openshift/temp/
         - name: MVN_VOLUME
           value: /openshift/persistent/
+      envFrom:
+        - configMapRef:
+            name: demo-smoke-config
       resources:
         limits:
           memory: 1Gi

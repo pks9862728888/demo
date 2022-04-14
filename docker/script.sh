@@ -2,10 +2,11 @@
 
 # Environment variables
 # MVN_VOLUME
+# ACTIVE_PROFILES
 
 # Application commands
-FIRST_RUN="mvn clean verify -Papp1profile -DskipTests=true -Dmaven.repo.local=${MVN_VOLUME}mymaven/m2"
-SECOND_RUN="mvn clean verify -Papp2profile -DskipTests=true -Dmaven.repo.local=${MVN_VOLUME}mymaven/m2"
+FIRST_RUN="mvn clean verify -Papp1profile -Dspring.profiles.active=${ACTIVE_PROFILES} -DskipTests=true -Dmaven.repo.local=${MVN_VOLUME}mymaven/m2"
+SECOND_RUN="mvn clean verify -Papp2profile -Dspring.profiles.active=${ACTIVE_PROFILES} -DskipTests=true -Dmaven.repo.local=${MVN_VOLUME}mymaven/m2"
 
 # Change working directory
 cd "${PROJECT_DIR}"
