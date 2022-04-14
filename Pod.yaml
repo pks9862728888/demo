@@ -25,6 +25,9 @@ spec:
           value: /openshift/temp/
         - name: MVN_VOLUME
           mountPath: /openshift/persistent/
+      envFrom:
+        - secretRef:
+            name: docker.io
       resources:
         limits:
           memory: 1Gi
