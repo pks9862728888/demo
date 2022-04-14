@@ -27,8 +27,8 @@ spec:
           mountPath: /openshift/persistent/
       resources:
         limits:
-          memory: 0.5Gi
+          memory: 1Gi
           cpu: 100m
         requests:
-          memory: 0.2Gi
+          memory: 1Gi
           cpu: 100m
