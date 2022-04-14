@@ -1,7 +1,7 @@
 #! /bin/bash -eux
 
 # Environment variables
-# mvn-persistent-volume
+# MVN_VOLUME
 
 # Application commands
 FIRST_RUN="mvn clean verify -Papp1profile -DskipTests=true -Dmaven.repo.local=${MVN_VOLUME}mymaven/m2"
