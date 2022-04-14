@@ -13,7 +13,7 @@ spec:
       emptyDir: { }
   containers:
     - name: app-container
-      image: docker.io/hackedlings/demo:1.0
+      image: docker.io/hackedlings/demo:latest
       imagePullPolicy: Always
       volumeMounts:
         - name: temp-volume
@@ -25,9 +25,6 @@ spec:
           value: /openshift/temp/
         - name: MVN_VOLUME
           mountPath: /openshift/persistent/
-      envFrom:
-        - secretRef:
-            name: docker.io
       resources:
         limits:
           memory: 1Gi

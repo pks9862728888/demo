@@ -1,20 +1,19 @@
 apiVersion: v1
 kind: Pod
 metadata:
+  name: demo
   labels:
     app: demo
     lang: java
-    name: demo
 spec:
   volumes:
     - name: temp-volume
       emptyDir: { }
     - name: mvn-persistent-volume
-      persistentVolumeClaim:
-        claimName: mvn-persistent-volume
+      emptyDir: { }
   containers:
     - name: app-container
-      image: docker.io/hackedlings/demo:1.0
+      image: docker.io/hackedlings/demo:latest
       imagePullPolicy: Always
       volumeMounts:
         - name: temp-volume
@@ -25,11 +24,12 @@ spec:
         - name: TEMP_VOLUME
           value: /openshift/temp/
         - name: MVN_VOLUME
-          mountPath: /openshift/persistent/
+          value: /openshift/persistent/
       resources:
         limits:
-          memory: 0.5Gi
-          cpu: 100m
+          memory: 1Gi
+          cpu: 1
         requests:
-          memory: 0.2Gi
-          cpu: 100m
+          memory: 1Gi
+          cpu: 1
+  restartPolicy: Never
