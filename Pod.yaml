@@ -32,3 +32,4 @@ spec:
         requests:
           memory: 1Gi
           cpu: 100m
+  restartPolicy: Never
