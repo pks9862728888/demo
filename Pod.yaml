@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
+  name: demo
   labels:
     app: demo
     lang: java
-    name: demo
 spec:
   volumes:
     - name: temp-volume
