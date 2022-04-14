@@ -31,8 +31,8 @@ spec:
       resources:
         limits:
           memory: 1Gi
-          cpu: 100m
+          cpu: 1
         requests:
           memory: 1Gi
-          cpu: 100m
+          cpu: 1
   restartPolicy: Never
