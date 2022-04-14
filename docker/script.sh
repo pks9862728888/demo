@@ -1,8 +1,16 @@
 #! /bin/bash -eux
 
-FIRST_RUN="mvn clean verify -DskipTests=true -Papp1profile"
-SECOND_RUN="mvn clean verify -DskipTests=true -Papp2profile"
+# Environment variables
+# mvn-persistent-volume
 
+# Application commands
+FIRST_RUN="mvn clean verify -Papp1profile -DskipTests=true -Dmaven.repo.local=${MVN_VOLUME}mymaven/m2"
+SECOND_RUN="mvn clean verify -Papp2profile -DskipTests=true -Dmaven.repo.local=${MVN_VOLUME}mymaven/m2"
+
+# Change working directory
+cd "${PROJECT_DIR}"
+
+# Execute application
 echo "Executing first..."
 if eval "${FIRST_RUN}"; then
    echo "First app executed!"
