@@ -10,8 +10,7 @@ spec:
     - name: temp-volume
       emptyDir: { }
     - name: mvn-persistent-volume
-      persistentVolumeClaim:
-        claimName: mvn-persistent-volume
+      emptyDir: { }
   containers:
     - name: app-container
       image: docker.io/hackedlings/demo:1.0
