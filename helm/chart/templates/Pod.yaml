@@ -7,18 +7,18 @@ metadata:
     lang: java
 spec:
   volumes:
-    - name: temp-volume
+    - name: temp-volume-{{ .Release.Name }}
       emptyDir: {}
-    - name: mvn-persistent-volume
+    - name: mvn-persistent-volume-{{ .Release.Name }}
       emptyDir: {}
   containers:
     - name: app-container-{{ .Release.Name }}
       image: docker.io/hackedlings/demo:latest
       imagePullPolicy: Always
       volumeMounts:
-        - name: temp-volume
+        - name: temp-volume--{{ .Release.Name }}
           mountPath: /openshift/temp/
-        - name: mvn-persistent-volume
+        - name: mvn-persistent-volume-{{ .Release.Name }}
           mountPath: /openshift/persistent/
       env:
         - name: TEMP_VOLUME
