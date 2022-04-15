@@ -27,7 +27,7 @@ spec:
           value: /openshift/persistent/
       envFrom:
         - configMapRef:
-            name: {{ .Release.Name }}_config_map
+            name: {{ .Release.Name }}.configmap
       resources:
         limits:
           memory: {{ .Values.spec.resources.limits.memory }}

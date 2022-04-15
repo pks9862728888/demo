@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}_config_map
+  name: {{ .Release.Name }}.configmap
   namespace: pks9862728888-dev
 data:
   TEST_SET: {{ .Values.configmap.testSet }}
