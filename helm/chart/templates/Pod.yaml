@@ -16,7 +16,7 @@ spec:
       image: docker.io/hackedlings/demo:latest
       imagePullPolicy: Always
       volumeMounts:
-        - name: temp-volume--{{ .Release.Name }}
+        - name: temp-volume-{{ .Release.Name }}
           mountPath: /openshift/temp/
         - name: mvn-persistent-volume-{{ .Release.Name }}
           mountPath: /openshift/persistent/
