@@ -2,6 +2,7 @@ global:
   namespace: pks9862728888-dev
 secret:
   username: dummyusername
+  password: dummypassword
 configmap:
   testSet: TESTSET-1234
   testPlan: TESTPLAN-1234
