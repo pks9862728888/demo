@@ -29,10 +29,12 @@ spec:
         - configMapRef:
             name: {{ .Release.Name }}.configmap
       resources:
+        {{ with .Values.spec.resources -}}
         limits:
-          memory: {{ .Values.spec.resources.limits.memory }}
-          cpu: {{ .Values.spec.resources.limits.cpu }}
+          memory: {{ .limits.memory }}
+          cpu: {{ .limits.cpu }}
         requests:
-          memory: {{ .Values.spec.resources.requests.memory }}
-          cpu: {{ .Values.spec.resources.requests.cpu }}
+          memory: {{ .requests.memory }}
+          cpu: {{ .requests.cpu }}
+        {{- end }}
   restartPolicy: Never
