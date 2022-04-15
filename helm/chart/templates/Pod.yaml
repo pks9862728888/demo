@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: { { .Release.Name } }
+  name: {{ .Release.Name }}
   labels:
-    app: { { .Release.Name } }
+    app: {{ .Release.Name }}
     lang: java
 spec:
   volumes:
     - name: temp-volume
-      emptyDir: { }
+      emptyDir: {}
     - name: mvn-persistent-volume
-      emptyDir: { }
+      emptyDir: {}
   containers:
     - name: app-container-{{ .Release.Name }}
       image: docker.io/hackedlings/demo:latest
@@ -27,12 +27,12 @@ spec:
           value: /openshift/persistent/
       envFrom:
         - configMapRef:
-            name: { { .Release.Name } }_config_map
+            name: {{ .Release.Name }}_config_map
       resources:
         limits:
-          memory: { { .Values.spec.resources.limits.memory } }
-          cpu: { { .Values.spec.resources.limits.cpu } }
+          memory: {{ .Values.spec.resources.limits.memory }}
+          cpu: {{ .Values.spec.resources.limits.cpu }}
         requests:
-          memory: { { .Values.spec.resources.requests.memory } }
-          cpu: { { .Values.spec.resources.requests.cpu } }
+          memory: {{ .Values.spec.resources.requests.memory }}
+          cpu: {{ .Values.spec.resources.requests.cpu }}
   restartPolicy: Never
