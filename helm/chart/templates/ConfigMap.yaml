@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}.configmap
-  namespace: pks9862728888-dev
+  name: {{ include "chart.configmapname" . }}
+  namespace: {{ .Values.global.namespace }}
 data:
   TEST_SET: {{ .Values.configmap.testSet }}
   TEST_PLAN: {{ .Values.configmap.testPlan }}
