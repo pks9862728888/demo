@@ -8,6 +8,10 @@ configmap:
   testPlan: TESTPLAN-1234
   activeProfiles: server
 spec:
+  persistentVolume:
+    enabled: false
+    emptyDir: {}
+    claimName: dummy-claim
   resources:
     limits:
       memory: 1Gi

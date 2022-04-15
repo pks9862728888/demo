@@ -10,7 +10,10 @@ spec:
     - name: temp-volume-{{ .Release.Name }}
       emptyDir: {}
     - name: mvn-persistent-volume-{{ .Release.Name }}
-      emptyDir: {}
+      persistentVolumeClaim:
+        {{- if .Values.spec.persistentVolume.enabled }}
+          claimName: {{ .Values.spec.persistentVolume.claimName }}
+        {{- end}}
   containers:
     - name: app-container-{{ .Release.Name }}
       image: docker.io/hackedlings/demo:latest
