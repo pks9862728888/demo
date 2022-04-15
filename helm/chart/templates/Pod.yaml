@@ -28,6 +28,8 @@ spec:
       envFrom:
         - configMapRef:
             name: {{ include "chart.configmapname" . }}
+        - secretRef:
+            name: {{ include "chart.secretname" . }}
       resources:
         {{ with .Values.spec.resources -}}
         limits:

@@ -2,5 +2,5 @@ apiVersion: v2
 name: demo
 appVersion: "1.1"
 version: 0.1.1
-description: Demo app for v1.1
+description: demo app for v1.1
 type: application
