@@ -1,0 +1,12 @@
+configmap:
+  testSet: TESTSET-1234
+  testPlan: TESTPLAN-1234
+  activeProfiles: server
+spec:
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: 1
+    requests:
+      memory: 1Gi
+      cpu: 1

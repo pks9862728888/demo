@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: demo-smoke-config
-  namespace: pks9862728888-dev
-data:
-  TEST_SET: TESTSET-1234
-  TEST_PLAN: TESTPLAN-1234
-  ACTIVE_PROFILES: server

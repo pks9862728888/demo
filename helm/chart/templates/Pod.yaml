@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: demo1
+  name: { { .Release.Name } }
   labels:
-    app: demo1
+    app: { { .Release.Name } }
     lang: java
 spec:
   volumes:
@@ -12,7 +12,7 @@ spec:
     - name: mvn-persistent-volume
       emptyDir: { }
   containers:
-    - name: app-container
+    - name: app-container-{{ .Release.Name }}
       image: docker.io/hackedlings/demo:latest
       imagePullPolicy: Always
       volumeMounts:
@@ -27,12 +27,12 @@ spec:
           value: /openshift/persistent/
       envFrom:
         - configMapRef:
-            name: demo-smoke-config
+            name: { { .Release.Name } }_config_map
       resources:
         limits:
-          memory: 1Gi
-          cpu: 1
+          memory: { { .Values.spec.resources.limits.memory } }
+          cpu: { { .Values.spec.resources.limits.cpu } }
         requests:
-          memory: 1Gi
-          cpu: 1
+          memory: { { .Values.spec.resources.requests.memory } }
+          cpu: { { .Values.spec.resources.requests.cpu } }
   restartPolicy: Never
