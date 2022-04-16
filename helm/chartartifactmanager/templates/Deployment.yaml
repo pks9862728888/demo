@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: temp-volume-{{ .Release.Name }}
+          emptyDir: {}
+        - name: mvn-persistent-volume-{{ .Release.Name }}
+          persistentVolumeClaim:
+            {{- if .Values.spec.persistentVolume.enabled }}
+            claimName: {{ .Values.spec.persistentVolume.claimName }}
+            {{- end }}
+      containers:
+        - name: app-container-{{ .Release.Name }}
+          image: docker.io/hackedlings/demo:2.0
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: temp-volume-{{ .Release.Name }}
+              mountPath: /openshift/temp/
+            - name: mvn-persistent-volume-{{ .Release.Name }}
+              mountPath: /openshift/persistent/
+          env:
+            - name: TEMP_VOLUME
+              value: /openshift/temp/
+            - name: MVN_VOLUME
+              value: /openshift/persistent/
+          envFrom:
+            - configMapRef:
+                name: {{ include "chart.configmapname" . }}
+            - secretRef:
+                name: {{ include "chart.secretname" . }}
+          resources:
+            {{ with .Values.spec.resources -}}
+            limits:
+              memory: {{ .limits.memory }}
+              cpu: {{ .limits.cpu }}
+            requests:
+              memory: {{ .requests.memory }}
+              cpu: {{ .requests.cpu }}
+            {{- end }}
+          ports:
+            - containerPort: 80

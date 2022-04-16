@@ -5,4 +5,5 @@ LABEL maintainer="pks9862728888"
 COPY docker/artifactmanager/mvn-entrypoint.sh /usr/local/scripts/mvn-entrypoint.sh
 RUN chmod +x /usr/local/scripts/mvn-entrypoint.sh
 
+EXPOSE 8080
 ENTRYPOINT ["/usr/local/scripts/mvn-entrypoint.sh"]
