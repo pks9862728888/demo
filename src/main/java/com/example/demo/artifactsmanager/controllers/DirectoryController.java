@@ -167,12 +167,6 @@ public class DirectoryController {
                         .withSelfRel()
                         .withTitle("list_screenshots: " + artifactDir)
                         .withName(artifactDir));
-            } else if (f.getName().contains("cucumber-html-reports")) {
-                links.add(linkTo(methodOn(DirectoryController.class)
-                        .viewCukeReport(regressionName, artifactDir, f.getName()))
-                        .withSelfRel()
-                        .withTitle("view_cuke_report: " + artifactDir)
-                        .withName(artifactDir));
             }
         });
 
@@ -238,15 +232,6 @@ public class DirectoryController {
         f.close();
 
         return new ResponseEntity<>(bytes, HttpStatus.OK);
-    }
-
-    @GetMapping("/view-cuke-report")
-    @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<String> viewCukeReport(
-            @RequestParam(name = "regressionName") String regressionName,
-            @RequestParam(name = "artifactDir") String artifactDir,
-            @RequestParam(name = "cukeReportDir") String cukeReportDir) {
-        return new HttpEntity<>(cukeReportDir);
     }
 
     @GetMapping("/delete-artifact-for-regression-run")
