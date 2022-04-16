@@ -1,0 +1,21 @@
+global:
+  namespace: pks9862728888-dev
+secret:
+  username: dummyusername
+  password: dummypassword
+configmap:
+  testSet: TESTSET-1234
+  testPlan: TESTPLAN-1234
+  activeProfiles: server
+spec:
+  persistentVolume:
+    enabled: false
+    emptyDir: {}
+    claimName: dummy-claim
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: 1
+    requests:
+      memory: 1Gi
+      cpu: 1
