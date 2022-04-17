@@ -1,0 +1,22 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-cronjob
+  namespace: {{ .Values.global.namespace }}
+spec:
+  schedule: "0 0 17 ? * *"
+  concurrencyPolicy: "Forbid"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: {{ .Release.Name }}
+              image: busybox
+              args:
+                - /bin/sh
+                - '-cx'
+                - eval "curl {{ .Release.Name }}.{{ .Values.global.namespace }}.{{ .Values.global.hostname }}/prune-expired-artifacts"
+          restartPolicy: OnFailure

@@ -253,6 +253,7 @@ public class DirectoryController {
     public HttpEntity<Message> deleteArtifact(
             @RequestParam(name = "regressionName") String regressionName,
             @RequestParam(name = "artifactDir") String artifactDir) {
+        System.out.println("/delete-artifact-for-regression-run called for: " + regressionName + "/" + artifactDir);
         Message message = new Message();
         // Delete artifact dir
         if (directoryService.deleteDirectory(
@@ -291,6 +292,7 @@ public class DirectoryController {
     @ResponseStatus(HttpStatus.OK)
     public HttpEntity<Message> deleteAllRegressionArtifactsForSpecificRegression(
             @RequestParam(name = "regressionName") String regressionName) {
+        System.out.println("/delete-all-regression-artifacts called for regressionName: " + regressionName);
         Message message = new Message();
 
         // Delete regression dir
@@ -313,6 +315,8 @@ public class DirectoryController {
     @GetMapping("/prune-expired-artifacts")
     @ResponseStatus(HttpStatus.OK)
     public HttpEntity<Message> pruneAllExpiredArtifacts() {
+        System.out.println("/prune-expired-artifacts endpoint called");
+
         // List all regression runs for specified regression
         ArrayList<Directory> regressionRuns = directoryService.listAllAvailableArtifactsDesc(
                 propertiesService.getArtifactsBaseDirectory());
@@ -349,6 +353,7 @@ public class DirectoryController {
                     + artifactExpiryDate);
         } else {
             message.setMessage("Deleted artifacts: [" + String.join(", ", deletedArtifacts) + "]");
+            System.out.println(message.getMessage());
         }
         message.add(linkTo(methodOn(DirectoryController.class)
                 .listAllRegressionTestCategories())
