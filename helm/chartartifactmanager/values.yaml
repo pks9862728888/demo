@@ -1,5 +1,6 @@
 global:
   namespace: pks9862728888-dev
+  hostname: apps.sandbox.x8i5.p1.openshiftapps.com
 secret:
   username: dummyusername
   password: dummypassword
