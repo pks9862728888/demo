@@ -14,11 +14,11 @@ public class CukeReportExposeConfig implements WebMvcConfigurer {
     @Autowired
     private PropertiesService propertiesService;
 
+    public static final String STATIC_RESOURCES_BASE_PATH = "artifacts";
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/gui-test/cucumber-html-reports/**")
-                .addResourceLocations("file:artifacts/gui-test/16-04-2022-12-12-23/cucumber-html-reports/");
-        registry.addResourceHandler("/smoke-test/cucumber-html-reports/**")
-                .addResourceLocations("file:artifacts/smoke-test/16-04-2022-12-12-23/cucumber-html-reports/");
+        registry.addResourceHandler("/" + STATIC_RESOURCES_BASE_PATH + "/**")
+                .addResourceLocations("file:" + propertiesService.getArtifactsBaseDirectory());
     }
 }
