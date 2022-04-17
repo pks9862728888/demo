@@ -47,4 +47,16 @@ public class DirectoryService {
             return deleted && path.delete();
         }
     }
+
+    public boolean deleteDirectoryIfEmpty(@NonNull File dir) {
+        if (dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null && files.length == 0) {
+                return dir.delete();
+            }
+        } else {
+            System.out.println("ERROR: Not a directory: " + dir);
+        }
+        return false;
+    }
 }

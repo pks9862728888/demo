@@ -1,10 +1,12 @@
 package com.example.demo.artifactsmanager.controllers;
 
+import com.example.demo.artifactsmanager.enums.DateTimePattern;
 import com.example.demo.artifactsmanager.models.Directory;
 import com.example.demo.artifactsmanager.models.Message;
 import com.example.demo.artifactsmanager.models.Screenshot;
 import com.example.demo.artifactsmanager.services.DirectoryService;
 import com.example.demo.artifactsmanager.services.PropertiesService;
+import com.example.demo.artifactsmanager.utils.DateTimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpEntity;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,7 @@ public class DirectoryController {
     private PropertiesService propertiesService;
 
     // Title constants
+    public static final String PRUNE_ALL_EXPIRED_ARTIFACTS = "PRUNE_ALL_EXPIRED_ARTIFACTS";
     public static final String VIEW_ARTIFACTS = "VIEW_ARTIFACTS";
     public static final String DELETE_ALL_ARTIFACTS_FOR_REGRESSION = "DELETE_ALL_ARTIFACTS_FOR_REGRESSION";
     public static final String VIEW_ALL_REGRESSIONS = "VIEW_ALL_REGRESSIONS";
@@ -75,6 +79,13 @@ public class DirectoryController {
                         .withTitle(DELETE_ALL_ARTIFACTS_FOR_REGRESSION)
                         .withName(REGRESSION_NAME + f.getName()));
             });
+
+            // Link to prune all artifacts which are older than specified
+            links.add(linkTo(methodOn(DirectoryController.class)
+                    .pruneAllExpiredArtifacts())
+                    .withSelfRel()
+                    .withTitle(PRUNE_ALL_EXPIRED_ARTIFACTS));
+
             message.add(links);
         }
 
@@ -121,29 +132,6 @@ public class DirectoryController {
                     .withName(REGRESSION_NAME + regressionName));
         }
         message.add(links);
-        return new HttpEntity<>(message);
-    }
-
-    @GetMapping("/delete-all-regression-artifacts")
-    @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<Message> deleteAllRegressionArtifactsForSpecificRegression(
-            @RequestParam(name = "regressionName") String regressionName) {
-        Message message = new Message();
-
-        // Delete regression dir
-        if (directoryService.deleteDirectory(
-                Paths.get(propertiesService.getArtifactsBaseDirectory(), regressionName).toFile())) {
-            message.setMessage("All regression artifacts deleted for regression: " + regressionName);
-        } else {
-            message.setMessage("Unable to delete regression artifacts for regression: " + regressionName);
-        }
-
-        // Link to list all regressions
-        message.add(linkTo(methodOn(DirectoryController.class)
-                .listAllRegressionTestCategories())
-                .withSelfRel()
-                .withTitle(VIEW_ALL_REGRESSIONS));
-
         return new HttpEntity<>(message);
     }
 
@@ -296,6 +284,76 @@ public class DirectoryController {
                 .withSelfRel()
                 .withTitle(VIEW_ALL_REGRESSIONS));
 
+        return new HttpEntity<>(message);
+    }
+
+    @GetMapping("/delete-all-regression-artifacts")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpEntity<Message> deleteAllRegressionArtifactsForSpecificRegression(
+            @RequestParam(name = "regressionName") String regressionName) {
+        Message message = new Message();
+
+        // Delete regression dir
+        if (directoryService.deleteDirectory(
+                Paths.get(propertiesService.getArtifactsBaseDirectory(), regressionName).toFile())) {
+            message.setMessage("All regression artifacts deleted for regression: " + regressionName);
+        } else {
+            message.setMessage("Unable to delete regression artifacts for regression: " + regressionName);
+        }
+
+        // Link to list all regressions
+        message.add(linkTo(methodOn(DirectoryController.class)
+                .listAllRegressionTestCategories())
+                .withSelfRel()
+                .withTitle(VIEW_ALL_REGRESSIONS));
+
+        return new HttpEntity<>(message);
+    }
+
+    @GetMapping("/prune-expired-artifacts")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpEntity<Message> pruneAllExpiredArtifacts() {
+        // List all regression runs for specified regression
+        ArrayList<Directory> regressionRuns = directoryService.listAllAvailableArtifactsDesc(
+                propertiesService.getArtifactsBaseDirectory());
+
+        // Find expiry date of artifacts
+        String artifactExpiryDate = DateTimeUtils.getDaysMinus(DateTimePattern.dd_MM_YYYY_hhmmss,
+                propertiesService.getNoOfDaysToStoreArtifacts());
+        List<String> deletedArtifacts = new ArrayList<>();
+
+        // Delete expired artifacts and create message
+        for (Directory regression : regressionRuns) {
+            Path regTriggerPath = Paths.get(propertiesService.getArtifactsBaseDirectory(), regression.getName());
+
+            // Delete all regression trigger having date older than artifactExpiryDate
+            directoryService.listAllAvailableArtifactsDesc(regTriggerPath.toString()).stream()
+                    .filter(dir -> dir.getName().compareTo(artifactExpiryDate) < 0)
+                    .map(dir -> regTriggerPath.resolve(dir.getName()))
+                    .forEach(path -> {
+                        if (directoryService.deleteDirectory(path.toFile())) {
+                            deletedArtifacts.add(path.toString());
+                        } else {
+                            System.out.println("ERROR: Unable to delete directory: " + path);
+                        }
+                    });
+
+            // Delete the empty regression dir if no regression trigger artifacts are present
+            directoryService.deleteDirectoryIfEmpty(regTriggerPath.toFile());
+        }
+
+        // Prepare message
+        Message message = new Message();
+        if (deletedArtifacts.isEmpty()) {
+            message.setMessage("No regression artifacts found which are triggered before timestamp: "
+                    + artifactExpiryDate);
+        } else {
+            message.setMessage("Deleted artifacts: [" + String.join(", ", deletedArtifacts) + "]");
+        }
+        message.add(linkTo(methodOn(DirectoryController.class)
+                .listAllRegressionTestCategories())
+                .withSelfRel()
+                .withTitle(VIEW_ALL_REGRESSIONS));
         return new HttpEntity<>(message);
     }
 }

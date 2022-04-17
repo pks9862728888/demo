@@ -11,4 +11,7 @@ public class PropertiesService {
     @Value("${artifactsBaseDirectory}")
     private String artifactsBaseDirectory;
 
+    @Value("${noOfDaysToStoreArtifacts}")
+    private int noOfDaysToStoreArtifacts;
+
 }
