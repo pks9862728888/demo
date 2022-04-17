@@ -28,7 +28,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-public class DirectoryController {
+public class DirectoryController extends GenericExceptionHandler {
 
     @Autowired
     private DirectoryService directoryService;
