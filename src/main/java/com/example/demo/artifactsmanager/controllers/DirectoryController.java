@@ -34,6 +34,17 @@ public class DirectoryController {
     @Autowired
     private PropertiesService propertiesService;
 
+    // Title constants
+    public static final String VIEW_ARTIFACTS = "VIEW_ARTIFACTS";
+    public static final String DELETE_ALL_ARTIFACTS_FOR_REGRESSION = "DELETE_ALL_ARTIFACTS_FOR_REGRESSION";
+    public static final String VIEW_ALL_REGRESSIONS = "VIEW_ALL_REGRESSIONS";
+    public static final String DELETE_ARTIFACTS = "DELETE_ARTIFACTS";
+    public static final String LIST_SCREENSHOTS = "LIST_SCREENSHOTS";
+
+    // Name constants
+    public static final String REGRESSION_NAME = "Regression name: ";
+    public static final String REGRESSION_TRIGGER = "Regression trigger: ";
+
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
     public HttpEntity<Message> listAllRegressionTestCategories() {
@@ -55,14 +66,14 @@ public class DirectoryController {
                 links.add(linkTo(methodOn(DirectoryController.class)
                         .viewSpecificRegressionArtifacts(f.getName()))
                         .withSelfRel()
-                        .withTitle("view_artifacts_for_regression: " + f.getName())
-                        .withName(f.getName()));
+                        .withTitle(VIEW_ARTIFACTS)
+                        .withName(REGRESSION_NAME + f.getName()));
                 // Delete all regression artifacts link
                 links.add(linkTo(methodOn(DirectoryController.class)
                         .deleteAllRegressionArtifactsForSpecificRegression(f.getName()))
                         .withSelfRel()
-                        .withTitle("delete_all_artifacts_for_regression:" + f.getName())
-                        .withName(f.getName()));
+                        .withTitle(DELETE_ALL_ARTIFACTS_FOR_REGRESSION)
+                        .withName(REGRESSION_NAME + f.getName()));
             });
             message.add(links);
         }
@@ -90,24 +101,24 @@ public class DirectoryController {
             links.add(linkTo(methodOn(DirectoryController.class)
                     .listAllRegressionTestCategories())
                     .withSelfRel()
-                    .withTitle("view_all_regression_artifacts"));
+                    .withTitle(VIEW_ALL_REGRESSIONS));
         } else {
             message.setMessage("Available artifacts for regression run: " + regressionName);
-
-            // Add delete regression link
-            links.add(linkTo(methodOn(DirectoryController.class)
-                    .deleteAllRegressionArtifactsForSpecificRegression(regressionName))
-                    .withSelfRel()
-                    .withTitle("delete_all_artifacts_for_regression: " + regressionName)
-                    .withName(regressionName));
 
             // Add manage artifact link for each regression run
             regressionRunDir.forEach(f ->
                     links.add(linkTo(methodOn(DirectoryController.class)
                             .manageArtifact(regressionName, f.getName()))
                             .withSelfRel()
-                            .withTitle("view_artifacts_for_regression_run: " + f.getName())
-                            .withName(f.getName())));
+                            .withTitle(VIEW_ARTIFACTS)
+                            .withName(REGRESSION_TRIGGER + regressionName + "/" + f.getName())));
+
+            // Add delete regression link
+            links.add(linkTo(methodOn(DirectoryController.class)
+                    .deleteAllRegressionArtifactsForSpecificRegression(regressionName))
+                    .withSelfRel()
+                    .withTitle(DELETE_ALL_ARTIFACTS_FOR_REGRESSION)
+                    .withName(REGRESSION_NAME + regressionName));
         }
         message.add(links);
         return new HttpEntity<>(message);
@@ -131,7 +142,7 @@ public class DirectoryController {
         message.add(linkTo(methodOn(DirectoryController.class)
                 .listAllRegressionTestCategories())
                 .withSelfRel()
-                .withTitle("view_all_regression_artifacts"));
+                .withTitle(VIEW_ALL_REGRESSIONS));
 
         return new HttpEntity<>(message);
     }
@@ -151,13 +162,6 @@ public class DirectoryController {
         // Add links
         List<Link> links = new ArrayList<>();
 
-        // Delete artifact dir link
-        links.add(linkTo(methodOn(DirectoryController.class)
-                .deleteArtifact(regressionName, artifactDir))
-                .withSelfRel()
-                .withTitle("delete_artifact_dir: " + artifactDir)
-                .withName(artifactDir));
-
         // Links for managing artifacts
         directoryList.forEach(f -> {
             // Add the links
@@ -165,10 +169,24 @@ public class DirectoryController {
                 links.add(linkTo(methodOn(DirectoryController.class)
                         .listScreenshots(regressionName, artifactDir, f.getName()))
                         .withSelfRel()
-                        .withTitle("list_screenshots: " + artifactDir)
-                        .withName(artifactDir));
+                        .withTitle(LIST_SCREENSHOTS)
+                        .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
             }
         });
+
+        // Delete artifact dir link
+        links.add(linkTo(methodOn(DirectoryController.class)
+                .deleteArtifact(regressionName, artifactDir))
+                .withSelfRel()
+                .withTitle(DELETE_ARTIFACTS)
+                .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
+
+        // View all regression trigger artifacts' dir link
+        links.add(linkTo(methodOn(DirectoryController.class)
+                .viewSpecificRegressionArtifacts(regressionName))
+                .withSelfRel()
+                .withTitle(VIEW_ARTIFACTS)
+                .withName(REGRESSION_NAME + regressionName));
 
         message.add(links);
         return new HttpEntity<>(message);
@@ -195,8 +213,8 @@ public class DirectoryController {
             links.add(linkTo(methodOn(DirectoryController.class)
                     .manageArtifact(regressionName, artifactDir))
                     .withSelfRel()
-                    .withTitle("view_all_artifacts_for_regression_run: " + artifactDir)
-                    .withName(artifactDir));
+                    .withTitle(VIEW_ARTIFACTS)
+                    .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
         } else {
             message.setMessage(String.format("%s screenshots found for regression run: %s/%s/%s", screenshotList.size(),
                     regressionName, artifactDir, screenshotDir));
@@ -207,13 +225,21 @@ public class DirectoryController {
                     links.add(linkTo(methodOn(DirectoryController.class)
                             .viewScreenshot(regressionName, artifactDir, screenshotDir, sc.getScreenshotName()))
                             .withSelfRel()
-                            .withTitle("view_screenshot: " + sc.getScreenshotName())
+                            .withTitle("VIEW_SCREENSHOT")
                             .withName(sc.getScreenshotName()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
         }
+
+        // Add link to go back (view regression artifacts)
+        links.add(linkTo(methodOn(DirectoryController.class)
+                .manageArtifact(regressionName, artifactDir))
+                .withSelfRel()
+                .withTitle(VIEW_ARTIFACTS)
+                .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
+
         message.add(links);
         return new HttpEntity<>(message);
     }
@@ -244,14 +270,14 @@ public class DirectoryController {
         if (directoryService.deleteDirectory(
                 Paths.get(propertiesService.getArtifactsBaseDirectory(), regressionName, artifactDir).toFile())) {
             // Set message if deleted
-            message.setMessage("Directory deleted successfully: " + artifactDir);
+            message.setMessage("Directory deleted successfully: " + regressionName + "/" + artifactDir);
 
-            // Link to list all artifacts
+            // Link to list all artifacts for specific regression trigger
             message.add(linkTo(methodOn(DirectoryController.class)
                     .viewSpecificRegressionArtifacts(regressionName))
                     .withSelfRel()
-                    .withTitle("view_artifacts_for_regression: " + regressionName)
-                    .withName(regressionName));
+                    .withTitle(VIEW_ARTIFACTS)
+                    .withName(REGRESSION_NAME + regressionName));
         } else {
             // Set message that directory could not be deleted
             message.setMessage("Could not delete directory: " + artifactDir);
@@ -260,9 +286,16 @@ public class DirectoryController {
             message.add(linkTo(methodOn(DirectoryController.class)
                     .manageArtifact(regressionName, artifactDir))
                     .withSelfRel()
-                    .withTitle("view_artifacts_for_regression_run: " + artifactDir)
-                    .withName(artifactDir));
+                    .withTitle(VIEW_ARTIFACTS)
+                    .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
         }
+
+        // Link to list all regressions
+        message.add(linkTo(methodOn(DirectoryController.class)
+                .listAllRegressionTestCategories())
+                .withSelfRel()
+                .withTitle(VIEW_ALL_REGRESSIONS));
+
         return new HttpEntity<>(message);
     }
 }
