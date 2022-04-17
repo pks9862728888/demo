@@ -1,10 +1,10 @@
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ .Release.Name }}-cronjob
   namespace: {{ .Values.global.namespace }}
 spec:
-  schedule: "2 17 * * *"
+  schedule: "2 12 * * *"
   concurrencyPolicy: "Forbid"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
