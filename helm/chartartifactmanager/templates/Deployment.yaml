@@ -23,7 +23,7 @@ spec:
             claimName: {{ .Values.spec.persistentVolume.claimName }}
             {{- end }}
       containers:
-        - name: app-container-{{ .Release.Name }}
+        - name: {{ .Release.Name }}
           image: docker.io/hackedlings/demo:2.0
           imagePullPolicy: Always
           volumeMounts:
