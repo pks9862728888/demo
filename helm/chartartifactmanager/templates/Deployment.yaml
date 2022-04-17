@@ -24,7 +24,7 @@ spec:
             {{- end }}
       containers:
         - name: {{ .Release.Name }}
-          image: docker.io/hackedlings/demo:2.0
+          image: {{ .Values.spec.imageName }}
           imagePullPolicy: Always
           volumeMounts:
             - name: temp-volume-{{ .Release.Name }}

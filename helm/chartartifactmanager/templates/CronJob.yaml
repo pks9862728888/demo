@@ -14,9 +14,9 @@ spec:
         spec:
           containers:
             - name: {{ .Release.Name }}
-              image: busybox
+              image: {{ .Values.spec.imageName }}
               args:
-                - /bin/sh
+                - /bin/bash
                 - '-cx'
                 - eval "curl {{ .Release.Name }}.{{ .Values.global.namespace }}.{{ .Values.global.hostname }}/prune-expired-artifacts"
           restartPolicy: OnFailure

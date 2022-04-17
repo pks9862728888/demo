@@ -9,6 +9,7 @@ configmap:
   testPlan: TESTPLAN-1234
   activeProfiles: server
 spec:
+  imageName: docker.io/hackedlings/demo:2.0
   persistentVolume:
     enabled: false
     emptyDir: {}

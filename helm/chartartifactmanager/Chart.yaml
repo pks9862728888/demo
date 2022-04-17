@@ -1,6 +1,6 @@
 apiVersion: v2
 name: demoartifactmanager
 appVersion: "1.1"
-version: 0.1.7
+version: 0.1.8
 description: demo app for v1.1
 type: application
