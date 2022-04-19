@@ -2,8 +2,13 @@ global:
   namespace: pks9862728888-dev
   hostname: apps.sandbox.x8i5.p1.openshiftapps.com
 secret:
+  # The below properties will be override while deployment
   username: dummyusername
   password: dummypassword
+  nonPrivilegedUsers: dummyuser
+  adminUser: dummyadmin
+  nonPrivilegedUserPassword: dummypassword
+  adminUserPassword: dummyuser
 configmap:
   testSet: TESTSET-1234
   testPlan: TESTPLAN-1234
