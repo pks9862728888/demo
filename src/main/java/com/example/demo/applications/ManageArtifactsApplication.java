@@ -6,6 +6,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import java.io.File;
 
@@ -13,6 +15,8 @@ import java.io.File;
 @ComponentScan(
         basePackages = "com.example.demo.artifactsmanager.*"
 )
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity
 public class ManageArtifactsApplication implements CommandLineRunner {
 
     @Autowired
