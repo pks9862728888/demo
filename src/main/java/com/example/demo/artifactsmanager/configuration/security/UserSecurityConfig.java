@@ -14,11 +14,17 @@ import java.util.Arrays;
 @Configuration
 public class UserSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${allowedUsers}")
-    private String allowedUsers;
+    @Value("${nonPrivilegedUsers}")
+    private String nonPrivilegedUsers;
 
     @Value("${adminUser}")
     private String adminUser;
+
+    @Value("${nonPrivilegedUserPassword}")
+    private String nonPrivilegedUserPassword;
+
+    @Value("${adminUserPassword}")
+    private String adminUserPassword;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -34,13 +40,13 @@ public class UserSecurityConfig extends WebSecurityConfigurerAdapter {
         PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
         // Create in-memory authentication for normal users
-        Arrays.stream(allowedUsers.split(","))
+        Arrays.stream(nonPrivilegedUsers.split(","))
                 .map(String::trim)
                 .forEach(user -> {
                     try {
                         auth.inMemoryAuthentication()
                                 .withUser(user)
-                                .password(passwordEncoder.encode("password"))
+                                .password(passwordEncoder.encode(nonPrivilegedUserPassword))
                                 .roles(Role.VIEW.getRole());
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -50,7 +56,7 @@ public class UserSecurityConfig extends WebSecurityConfigurerAdapter {
         // Create admin user
         auth.inMemoryAuthentication()
                 .withUser(adminUser)
-                .password(passwordEncoder.encode("passwordadmin"))
+                .password(passwordEncoder.encode(adminUserPassword))
                 .roles(Role.EDIT.getRole());
     }
 }
