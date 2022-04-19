@@ -64,6 +64,7 @@ public class DirectoryController extends GenericExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public HttpEntity<Message> listAllRegressionTestCategories(
             HttpServletRequest request, Authentication authentication) {
+        System.out.println("/ called by user: " + authentication.getName());
         // List all regression directories
         ArrayList<Directory> directoryList = directoryService.listAllAvailableArtifactsDesc(
                 propertiesService.getArtifactsBaseDirectory());
@@ -343,10 +344,9 @@ public class DirectoryController extends GenericExceptionHandler {
 
     @GetMapping("/prune-expired-artifacts")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ROLE_EDIT')")
     public HttpEntity<Message> pruneAllExpiredArtifacts(
             HttpServletRequest httpServletRequest, Authentication authentication) {
-        System.out.println("/prune-expired-artifacts endpoint called by user: " + authentication.getName());
+        System.out.println("/prune-expired-artifacts endpoint called!");
 
         // List all regression runs for specified regression
         ArrayList<Directory> regressionRuns = directoryService.listAllAvailableArtifactsDesc(
