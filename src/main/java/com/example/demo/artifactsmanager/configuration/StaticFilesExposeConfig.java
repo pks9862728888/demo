@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebMvc
-public class CukeReportExposeConfig implements WebMvcConfigurer {
+public class StaticFilesExposeConfig implements WebMvcConfigurer {
 
     @Autowired
     private PropertiesService propertiesService;
@@ -18,7 +18,12 @@ public class CukeReportExposeConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Artifacts
         registry.addResourceHandler("/" + STATIC_RESOURCES_BASE_PATH + "/**")
                 .addResourceLocations("file:" + propertiesService.getArtifactsBaseDirectory());
+
+        // Css
+        registry.addResourceHandler("/css/**")
+                .addResourceLocations("classpath:css/");
     }
 }

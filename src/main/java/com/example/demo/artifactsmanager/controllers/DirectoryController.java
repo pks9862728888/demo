@@ -5,10 +5,12 @@ import com.example.demo.artifactsmanager.enums.Role;
 import com.example.demo.artifactsmanager.models.Directory;
 import com.example.demo.artifactsmanager.models.Message;
 import com.example.demo.artifactsmanager.models.Screenshot;
+import com.example.demo.artifactsmanager.services.ArtifactManagerHtmlBuilderService;
 import com.example.demo.artifactsmanager.services.DirectoryService;
 import com.example.demo.artifactsmanager.services.PropertiesService;
 import com.example.demo.artifactsmanager.services.UriBuilderService;
 import com.example.demo.artifactsmanager.utils.DateTimeUtils;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpEntity;
@@ -26,7 +28,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.demo.artifactsmanager.configuration.CukeReportExposeConfig.STATIC_RESOURCES_BASE_PATH;
+import static com.example.demo.artifactsmanager.configuration.StaticFilesExposeConfig.STATIC_RESOURCES_BASE_PATH;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -42,6 +44,9 @@ public class DirectoryController extends GenericExceptionHandler {
     @Autowired
     private UriBuilderService uriBuilderService;
 
+    @Autowired
+    private ArtifactManagerHtmlBuilderService htmlBuilder;
+
     // Directory constants
     public static final String SCREENSHOTS = "screenshots";
     public static final String CUCUMBER_HTML_REPORTS = "cucumber-html-reports";
@@ -54,6 +59,7 @@ public class DirectoryController extends GenericExceptionHandler {
     public static final String DELETE_ARTIFACTS = "DELETE_ARTIFACTS";
     public static final String LIST_SCREENSHOTS = "LIST_SCREENSHOTS";
     public static final String VIEW_CUKE_REPORT = "VIEW_CUKE_REPORT";
+    public static final String VIEW_SCREENSHOT = "VIEW_SCREENSHOT";
     public static final String OVERVIEW_FEATURES_HTML = "overview-features.html";
 
     // Name constants
@@ -62,7 +68,7 @@ public class DirectoryController extends GenericExceptionHandler {
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<Message> listAllRegressionTestCategories(
+    public HttpEntity<String> listAllRegressionTestCategories(
             HttpServletRequest request, Authentication authentication) {
         System.out.println("/ called by user: " + authentication.getName());
         // List all regression directories
@@ -107,14 +113,15 @@ public class DirectoryController extends GenericExceptionHandler {
             message.add(links);
         }
 
-        return new HttpEntity<>(message);
+        return new HttpEntity<>(htmlBuilder.buildWebPage(
+                message, getTitleLink(request), getLogoutLink(request)));
     }
 
     @GetMapping("/view-artifacts")
     @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<Message> viewSpecificRegressionArtifacts(
+    public HttpEntity<String> viewSpecificRegressionArtifacts(
             @RequestParam(name = "regressionName") String regressionName,
-            HttpServletRequest httpServletRequest, Authentication authentication) {
+            HttpServletRequest request, Authentication authentication) {
         // List all regression runs for specified regression
         ArrayList<Directory> regressionRunDir = directoryService.listAllAvailableArtifactsDesc(
                 Paths.get(propertiesService.getArtifactsBaseDirectory(), regressionName).toString());
@@ -129,16 +136,16 @@ public class DirectoryController extends GenericExceptionHandler {
 
             // View all regression link
             links.add(linkTo(methodOn(DirectoryController.class)
-                    .listAllRegressionTestCategories(httpServletRequest, authentication))
+                    .listAllRegressionTestCategories(request, authentication))
                     .withSelfRel()
                     .withTitle(VIEW_ALL_REGRESSIONS));
         } else {
-            message.setMessage("Available artifacts for regression run: " + regressionName);
+            message.setMessage("Regression name: " + regressionName);
 
             // Add manage artifact link for each regression run
             regressionRunDir.forEach(f ->
                     links.add(linkTo(methodOn(DirectoryController.class)
-                            .manageArtifact(regressionName, f.getName(), httpServletRequest, authentication))
+                            .manageArtifact(regressionName, f.getName(), request, authentication))
                             .withSelfRel()
                             .withTitle(VIEW_ARTIFACTS)
                             .withName(REGRESSION_TRIGGER + regressionName + "/" + f.getName())));
@@ -146,28 +153,28 @@ public class DirectoryController extends GenericExceptionHandler {
             // Add delete regression link
             if (Role.hasEditPermission(authentication)) {
                 links.add(linkTo(methodOn(DirectoryController.class)
-                        .deleteAllRegressionArtifactsForSpecificRegression(regressionName, httpServletRequest, authentication))
+                        .deleteAllRegressionArtifactsForSpecificRegression(regressionName, request, authentication))
                         .withSelfRel()
                         .withTitle(DELETE_ALL_ARTIFACTS_FOR_REGRESSION)
                         .withName(REGRESSION_NAME + regressionName));
             }
         }
         message.add(links);
-        return new HttpEntity<>(message);
+        return new HttpEntity<>(htmlBuilder.buildWebPage(message, getTitleLink(request), getLogoutLink(request)));
     }
 
     @GetMapping("/manage-artifact")
     @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<Message> manageArtifact(
+    public HttpEntity<String> manageArtifact(
             @RequestParam(name = "regressionName") String regressionName,
             @RequestParam(name = "artifactDir") String artifactDir,
-            HttpServletRequest httpServletRequest, Authentication authentication) {
+            HttpServletRequest request, Authentication authentication) {
         // List all directories
         ArrayList<Directory> directoryList = directoryService.listAllAvailableArtifactsDesc(
                 Paths.get(propertiesService.getArtifactsBaseDirectory(), regressionName, artifactDir).toString());
 
         // Create message object
-        Message message = new Message("Manage artifact for regression run: " + regressionName + "/" + artifactDir);
+        Message message = new Message("Regression Trigger: " + regressionName + "/" + artifactDir);
 
         // Add links
         List<Link> links = new ArrayList<>();
@@ -177,12 +184,12 @@ public class DirectoryController extends GenericExceptionHandler {
             // Add the links
             if (f.getName().equalsIgnoreCase(SCREENSHOTS)) {
                 links.add(linkTo(methodOn(DirectoryController.class)
-                        .listScreenshots(regressionName, artifactDir, f.getName(), httpServletRequest, authentication))
+                        .listScreenshots(regressionName, artifactDir, f.getName(), request, authentication))
                         .withSelfRel()
                         .withTitle(LIST_SCREENSHOTS)
                         .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
             } else if (f.getName().equalsIgnoreCase(CUCUMBER_HTML_REPORTS)) {
-                links.add(Link.of(uriBuilderService.buildUri(httpServletRequest,
+                links.add(Link.of(uriBuilderService.buildUri(request,
                                 STATIC_RESOURCES_BASE_PATH, regressionName, artifactDir, f.getName(), OVERVIEW_FEATURES_HTML))
                         .withTitle(VIEW_CUKE_REPORT)
                         .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
@@ -192,7 +199,7 @@ public class DirectoryController extends GenericExceptionHandler {
         // Delete artifact dir link
         if (Role.hasEditPermission(authentication)){
             links.add(linkTo(methodOn(DirectoryController.class)
-                    .deleteArtifact(regressionName, artifactDir, httpServletRequest, authentication))
+                    .deleteArtifact(regressionName, artifactDir, request, authentication))
                     .withSelfRel()
                     .withTitle(DELETE_ARTIFACTS)
                     .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
@@ -200,22 +207,22 @@ public class DirectoryController extends GenericExceptionHandler {
 
         // View all regression trigger artifacts' dir link
         links.add(linkTo(methodOn(DirectoryController.class)
-                .viewSpecificRegressionArtifacts(regressionName, httpServletRequest, authentication))
+                .viewSpecificRegressionArtifacts(regressionName, request, authentication))
                 .withSelfRel()
                 .withTitle(VIEW_ARTIFACTS)
                 .withName(REGRESSION_NAME + regressionName));
 
         message.add(links);
-        return new HttpEntity<>(message);
+        return new HttpEntity<>(htmlBuilder.buildWebPage(message, getTitleLink(request), getLogoutLink(request)));
     }
 
     @GetMapping("/list-screenshots")
     @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<Message> listScreenshots(
+    public HttpEntity<String> listScreenshots(
             @RequestParam(name = "regressionName") String regressionName,
             @RequestParam(name = "artifactDir") String artifactDir,
             @RequestParam(name = "screenshotDir") String screenshotDir,
-            HttpServletRequest httpServletRequest, Authentication authentication) {
+            HttpServletRequest request, Authentication authentication) {
         // List all screenshots
         ArrayList<Screenshot> screenshotList = directoryService.listAllScreenshots(
                 Paths.get(propertiesService.getArtifactsBaseDirectory(),
@@ -229,7 +236,7 @@ public class DirectoryController extends GenericExceptionHandler {
 
             // Link to manage artifacts
             links.add(linkTo(methodOn(DirectoryController.class)
-                    .manageArtifact(regressionName, artifactDir, httpServletRequest, authentication))
+                    .manageArtifact(regressionName, artifactDir, request, authentication))
                     .withSelfRel()
                     .withTitle(VIEW_ARTIFACTS)
                     .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
@@ -240,23 +247,23 @@ public class DirectoryController extends GenericExceptionHandler {
             // Add link to view each screenshot (served as static data)
             screenshotList.forEach(sc -> {
                 links.add(Link.of(uriBuilderService.buildUri(
-                                httpServletRequest,
+                                request,
                                 STATIC_RESOURCES_BASE_PATH, regressionName, artifactDir, SCREENSHOTS, sc.getScreenshotName()))
                         .withSelfRel()
-                        .withTitle("VIEW_SCREENSHOT")
+                        .withTitle(VIEW_SCREENSHOT)
                         .withName(sc.getScreenshotName()));
             });
         }
 
         // Add link to go back (view regression artifacts)
         links.add(linkTo(methodOn(DirectoryController.class)
-                .manageArtifact(regressionName, artifactDir, httpServletRequest, authentication))
+                .manageArtifact(regressionName, artifactDir, request, authentication))
                 .withSelfRel()
                 .withTitle(VIEW_ARTIFACTS)
                 .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
 
         message.add(links);
-        return new HttpEntity<>(message);
+        return new HttpEntity<>(htmlBuilder.buildWebPage(message, getTitleLink(request), getLogoutLink(request)));
     }
 
 //    @GetMapping(value = "/view-screenshot", produces = MediaType.IMAGE_PNG_VALUE)
@@ -277,10 +284,10 @@ public class DirectoryController extends GenericExceptionHandler {
 
     @GetMapping("/delete-artifact-for-regression-run")
     @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<Message> deleteArtifact(
+    public HttpEntity<String> deleteArtifact(
             @RequestParam(name = "regressionName") String regressionName,
             @RequestParam(name = "artifactDir") String artifactDir,
-            HttpServletRequest httpServletRequest, Authentication authentication) {
+            HttpServletRequest request, Authentication authentication) {
         System.out.println("/delete-artifact-for-regression-run called for: " + regressionName + "/" + artifactDir);
         Message message = new Message();
         // Delete artifact dir
@@ -291,7 +298,7 @@ public class DirectoryController extends GenericExceptionHandler {
 
             // Link to list all artifacts for specific regression trigger
             message.add(linkTo(methodOn(DirectoryController.class)
-                    .viewSpecificRegressionArtifacts(regressionName, httpServletRequest, authentication))
+                    .viewSpecificRegressionArtifacts(regressionName, request, authentication))
                     .withSelfRel()
                     .withTitle(VIEW_ARTIFACTS)
                     .withName(REGRESSION_NAME + regressionName));
@@ -301,7 +308,7 @@ public class DirectoryController extends GenericExceptionHandler {
 
             // Link to manage artifacts
             message.add(linkTo(methodOn(DirectoryController.class)
-                    .manageArtifact(regressionName, artifactDir, httpServletRequest, authentication))
+                    .manageArtifact(regressionName, artifactDir, request, authentication))
                     .withSelfRel()
                     .withTitle(VIEW_ARTIFACTS)
                     .withName(REGRESSION_TRIGGER + regressionName + "/" + artifactDir));
@@ -309,19 +316,19 @@ public class DirectoryController extends GenericExceptionHandler {
 
         // Link to list all regressions
         message.add(linkTo(methodOn(DirectoryController.class)
-                .listAllRegressionTestCategories(httpServletRequest, authentication))
+                .listAllRegressionTestCategories(request, authentication))
                 .withSelfRel()
                 .withTitle(VIEW_ALL_REGRESSIONS));
 
-        return new HttpEntity<>(message);
+        return new HttpEntity<>(htmlBuilder.buildWebPage(message, getTitleLink(request), getLogoutLink(request)));
     }
 
     @GetMapping("/delete-all-regression-artifacts")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ROLE_EDIT')")
-    public HttpEntity<Message> deleteAllRegressionArtifactsForSpecificRegression(
+    public HttpEntity<String> deleteAllRegressionArtifactsForSpecificRegression(
             @RequestParam(name = "regressionName") String regressionName,
-            HttpServletRequest httpServletRequest, Authentication authentication) {
+            HttpServletRequest request, Authentication authentication) {
         System.out.println("/delete-all-regression-artifacts called for regressionName: " + regressionName);
         Message message = new Message();
 
@@ -335,17 +342,17 @@ public class DirectoryController extends GenericExceptionHandler {
 
         // Link to list all regressions
         message.add(linkTo(methodOn(DirectoryController.class)
-                .listAllRegressionTestCategories(httpServletRequest, authentication))
+                .listAllRegressionTestCategories(request, authentication))
                 .withSelfRel()
                 .withTitle(VIEW_ALL_REGRESSIONS));
 
-        return new HttpEntity<>(message);
+        return new HttpEntity<>(htmlBuilder.buildWebPage(message, getTitleLink(request), getLogoutLink(request)));
     }
 
     @GetMapping("/prune-expired-artifacts")
     @ResponseStatus(HttpStatus.OK)
-    public HttpEntity<Message> pruneAllExpiredArtifacts(
-            HttpServletRequest httpServletRequest, Authentication authentication) {
+    public HttpEntity<String> pruneAllExpiredArtifacts(
+            HttpServletRequest request, Authentication authentication) {
         System.out.println("/prune-expired-artifacts endpoint called!");
 
         // List all regression runs for specified regression
@@ -387,9 +394,17 @@ public class DirectoryController extends GenericExceptionHandler {
             System.out.println(message.getMessage());
         }
         message.add(linkTo(methodOn(DirectoryController.class)
-                .listAllRegressionTestCategories(httpServletRequest, authentication))
+                .listAllRegressionTestCategories(request, authentication))
                 .withSelfRel()
                 .withTitle(VIEW_ALL_REGRESSIONS));
-        return new HttpEntity<>(message);
+        return new HttpEntity<>(htmlBuilder.buildWebPage(message, getTitleLink(request), getLogoutLink(request)));
+    }
+
+    public String getLogoutLink(@NonNull HttpServletRequest httpServletRequest) {
+        return uriBuilderService.buildUri(httpServletRequest, "logout");
+    }
+
+    public String getTitleLink(@NonNull HttpServletRequest httpServletRequest) {
+        return uriBuilderService.buildUri(httpServletRequest, "");
     }
 }

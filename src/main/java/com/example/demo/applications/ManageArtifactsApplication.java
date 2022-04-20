@@ -21,7 +21,6 @@ import java.io.File;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
 public class ManageArtifactsApplication implements CommandLineRunner {
-
     @Autowired
     private PropertiesService propertiesService;
 

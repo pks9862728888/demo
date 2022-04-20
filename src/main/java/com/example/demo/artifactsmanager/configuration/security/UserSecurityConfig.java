@@ -30,6 +30,7 @@ public class UserSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .mvcMatchers("/prune-expired-artifacts").permitAll()
+                .mvcMatchers("/css/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin();
